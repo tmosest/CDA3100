@@ -25,16 +25,33 @@ ALTFIB:
 	li $a0, 1					# fib(0) = 1
     li $a1, -1					# fib(1) = -1
     li $a2, 2					# space counter
-    li $a3, 0
 ##########################
 # ALTFIBLOOP Function
 ##########################
 ALTFIBLOOP:
+	li $t3, 2
 	beq $a2, 5, PRINTNEWLINE
-	slti $t0, $a3, 10			# check a2 < 10
-    beq $t0, $zero, EXIT		# EXIT
+	sub $t0, $a0, $a1			# fib(n) = fib(n-2) - fib(n-1)
+	move $t4, $a0
+	# Check A - B, A >= 0 B < 0
+	slt $t1, $a1, $zero			# Is B < 0
+	# Check result of A - B for < 0
+	slt $t2, $t0, $zero
+	add $t2, $t2, $t1
+	move $a0, $t0
+	beq $t2, $t3, EXIT		# EXIT
+	move $a0, $t4
+	# Check A - B, A < 0 B >= 0
+	slt $t1, $a0, $zero			# Is A < 0
+	# Check result of A - B for >= 0
+	slt $t2, $zero, $t0
+	add $t2, $t2, $t1
+	move $a0, $t0
+    beq $t2, $t3, EXIT		# EXIT
+	move $a0, $t4
+	# End check for overflow
 
-	sub $a0, $a0, $a1			# fib(n) = fib(n-2) - fib(n-1)
+	move $a0, $t0				# fib(n) = fib(n-2) - fib(n-1)
 	li	$v0, 1					#
     syscall
 
@@ -49,7 +66,6 @@ ALTFIBLOOP:
 
 ADDLOOP:
 	addi $a2, $a2, 1			# $a2 += 1
-	addi $a3, $a3, 1
     j ALTFIBLOOP
 ##########################
 # RESETSPACECOUNTER Function
